@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  /* Cyber grid overlay pattern */
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(6, 182, 212, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(6, 182, 212, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  /* Glow utilities */
+  .glow-cyan {
+    box-shadow: 0 0 16px rgba(6, 182, 212, 0.35), 0 0 4px rgba(6, 182, 212, 0.2);
+  }
+  .glow-green {
+    box-shadow: 0 0 16px rgba(34, 197, 94, 0.4), 0 0 4px rgba(34, 197, 94, 0.2);
+  }
+  .glow-red {
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.35), 0 0 4px rgba(239, 68, 68, 0.2);
+  }
+  .text-glow-cyan {
+    text-shadow: 0 0 12px rgba(6, 182, 212, 0.8);
+  }
+  .text-glow-green {
+    text-shadow: 0 0 12px rgba(34, 197, 94, 0.8);
+  }
+}
+
+@layer base {
+  :root {
+    --background: 222 47% 5%;
+    --foreground: 210 40% 95%;
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 95%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 95%;
+    --primary: 188 94% 43%;
+    --primary-foreground: 222 47% 5%;
+    --secondary: 222 30% 14%;
+    --secondary-foreground: 210 40% 80%;
+    --muted: 222 30% 12%;
+    --muted-foreground: 215 20% 50%;
+    --accent: 188 94% 43%;
+    --accent-foreground: 222 47% 5%;
+    --destructive: 0 84% 60%;
+    --border: 188 80% 30% / 0.2;
+    --input: 222 30% 14%;
+    --ring: 188 94% 43%;
+    --radius: 0.5rem;
+
+    /* semantic tokens used in components */
+    --cyan: #06b6d4;
+    --cyan-dim: rgba(6, 182, 212, 0.15);
+    --green: #22c55e;
+    --green-dim: rgba(34, 197, 94, 0.12);
+    --red: #ef4444;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    background-color: hsl(222, 47%, 5%);
+    color: hsl(210, 40%, 95%);
+    font-family: var(--font-sans, sans-serif);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.25); border-radius: 2px; }
+
+  /* Make Tailwind CSS variables available */
+  .dark {
+    --background: oklch(0.09 0.015 250);
+    --foreground: oklch(0.95 0.01 220);
+    --card: oklch(0.12 0.018 250);
+    --card-foreground: oklch(0.95 0.01 220);
+    --popover: oklch(0.12 0.018 250);
+    --popover-foreground: oklch(0.95 0.01 220);
+    --primary: oklch(0.72 0.15 210);
+    --primary-foreground: oklch(0.09 0.015 250);
+    --secondary: oklch(0.18 0.02 250);
+    --secondary-foreground: oklch(0.80 0.01 220);
+    --muted: oklch(0.16 0.015 250);
+    --muted-foreground: oklch(0.55 0.02 230);
+    --accent: oklch(0.72 0.15 210);
+    --accent-foreground: oklch(0.09 0.015 250);
+    --destructive: oklch(0.62 0.22 25);
+    --border: oklch(0.72 0.15 210 / 0.15);
+    --input: oklch(0.18 0.02 250);
+    --ring: oklch(0.72 0.15 210);
+  }
+}
+
+/* ── Animations ──────────────────────────────────────────────────────────── */
+
+@keyframes scan-line {
+  0%   { top: -4px; opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes glow-pulse-green {
+  0%, 100% { box-shadow: 0 0 8px rgba(34,197,94,0.4),  0 0 2px rgba(34,197,94,0.3);  }
+  50%       { box-shadow: 0 0 24px rgba(34,197,94,0.7), 0 0 8px rgba(34,197,94,0.5);  }
+}
+
+@keyframes glow-pulse-cyan {
+  0%, 100% { box-shadow: 0 0 8px rgba(6,182,212,0.3),  0 0 2px rgba(6,182,212,0.2);  }
+  50%       { box-shadow: 0 0 24px rgba(6,182,212,0.6), 0 0 8px rgba(6,182,212,0.4);  }
+}
+
+@keyframes dash-flow {
+  to { stroke-dashoffset: -20; }
+}
+
+@keyframes number-count {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-scan-line    { animation: scan-line 2.4s linear infinite; }
+.animate-fade-up      { animation: fade-up 0.45s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-blink        { animation: blink 1s step-end infinite; }
+.animate-glow-green   { animation: glow-pulse-green 2.2s ease-in-out infinite; }
+.animate-glow-cyan    { animation: glow-pulse-cyan 2.2s ease-in-out infinite; }
+.animate-dash-flow    { animation: dash-flow 1s linear infinite; }
+.animate-number-count { animation: number-count 0.5s cubic-bezier(0.16,1,0.3,1) 0.2s both; }
