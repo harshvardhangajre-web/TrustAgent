@@ -1,0 +1,43 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_20-9463b3c70aad76c52f04663dee93604c8ecc0562",
+  "solcVersion": "0.8.20",
+  "solcLongVersion": "0.8.20+commit.a1b79de6",
+  "userSourceNameMap": {
+    "contracts/ActionLog.sol": "project/contracts/ActionLog.sol",
+    "contracts/TrustAgent.sol": "project/contracts/TrustAgent.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "shanghai",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/ActionLog.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.20;\n\n/**\n * @title ActionLog\n * @notice On-chain audit log for Trust-Agent (Shardeum Mezame).\n * @dev Stores a bytes32 task fingerprint (e.g. keccak256 of pitch) and the AI result payload.\n */\ncontract ActionLog {\n    struct Action {\n        address actor;\n        bytes32 taskHash;\n        string result;\n        uint64 timestamp;\n    }\n\n    mapping(uint256 => Action) public actions;\n    uint256 public count;\n\n    event ActionLogged(\n        uint256 indexed actionId,\n        address indexed actor,\n        bytes32 taskHash,\n        string result\n    );\n\n    /**\n     * @param taskHash Cryptographic fingerprint of the task input (e.g. keccak256(utf8(pitch))).\n     * @param result   Opaque result string (e.g. JSON from the LLM).\n     */\n    function logAction(bytes32 taskHash, string memory result) external returns (uint256 actionId) {\n        unchecked {\n            actionId = count + 1;\n            count = actionId;\n        }\n\n        actions[actionId] = Action({\n            actor: msg.sender,\n            taskHash: taskHash,\n            result: result,\n            timestamp: uint64(block.timestamp)\n        });\n\n        emit ActionLogged(actionId, msg.sender, taskHash, result);\n    }\n}\n"
+      },
+      "project/contracts/TrustAgent.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.20;\n\n/**\n * @title TrustAgent\n * @notice Shardeum Mezame — Escrow bookings, oracle outcomes, auto-refund, on-chain Trust Score.\n */\ncontract TrustAgent {\n    address public owner;\n    address public oracle;\n\n    /// @notice Verifiable Resume — cumulative trust points per wallet.\n    mapping(address => uint256) public reputation;\n\n    uint256 public nextBookingId;\n\n    /// @notice Grace after `meetingEnd` before anyone can pull auto-refund (gives AI time to judge).\n    uint256 public constant REFUND_GRACE = 1 days;\n\n    struct Booking {\n        address company;\n        address employee;\n        uint256 amount;\n        uint256 meetingEnd;\n        bool settled;\n    }\n\n    mapping(uint256 => Booking) public bookings;\n\n    bool private _entered;\n\n    event Booked(\n        uint256 indexed bookingId,\n        address indexed company,\n        address indexed employee,\n        uint256 amount,\n        uint256 meetingEnd\n    );\n    event OutcomeSettled(\n        uint256 indexed bookingId,\n        bool meetingSuccessful,\n        address indexed beneficiary,\n        uint256 amount,\n        string reason\n    );\n    event ReputationIncreased(address indexed user, uint256 newTotal);\n    event RefundedExpired(uint256 indexed bookingId, address indexed company, uint256 amount);\n\n    error NotOwner();\n    error NotOracle();\n    error InvalidBooking();\n    error AlreadySettled();\n    error TooEarlyForRefund();\n    error BadEmployee();\n\n    modifier onlyOwner() {\n        if (msg.sender != owner) revert NotOwner();\n        _;\n    }\n\n    modifier onlyOracle() {\n        if (msg.sender != oracle) revert NotOracle();\n        _;\n    }\n\n    modifier nonReentrant() {\n        if (_entered) revert();\n        _entered = true;\n        _;\n        _entered = false;\n    }\n\n    constructor(address oracle_) {\n        owner = msg.sender;\n        oracle = oracle_;\n    }\n\n    function setOracle(address o) external onlyOwner {\n        oracle = o;\n    }\n\n    /// @notice Company escrows native SHM to book an employee.\n    function book(address employee, uint256 meetingEnd) external payable nonReentrant {\n        if (msg.value == 0) revert();\n        if (employee == address(0) || employee == msg.sender) revert BadEmployee();\n        if (meetingEnd <= block.timestamp) revert();\n\n        uint256 id = ++nextBookingId;\n        bookings[id] = Booking({\n            company: msg.sender,\n            employee: employee,\n            amount: msg.value,\n            meetingEnd: meetingEnd,\n            settled: false\n        });\n\n        emit Booked(id, msg.sender, employee, msg.value, meetingEnd);\n    }\n\n    /// @notice AI oracle: success → pay employee + increase reputation; failure → refund company.\n    function executeOutcome(uint256 bookingId, bool meetingSuccessful, string calldata reason)\n        external\n        onlyOracle\n        nonReentrant\n    {\n        Booking storage b = bookings[bookingId];\n        if (b.company == address(0)) revert InvalidBooking();\n        if (b.settled) revert AlreadySettled();\n\n        b.settled = true;\n        uint256 amt = b.amount;\n\n        if (meetingSuccessful) {\n            (bool ok, ) = payable(b.employee).call{value: amt}(\"\");\n            require(ok, \"pay\");\n            unchecked {\n                reputation[b.employee] += 10;\n            }\n            emit ReputationIncreased(b.employee, reputation[b.employee]);\n            emit OutcomeSettled(bookingId, true, b.employee, amt, reason);\n        } else {\n            (bool ok, ) = payable(b.company).call{value: amt}(\"\");\n            require(ok, \"refund\");\n            emit OutcomeSettled(bookingId, false, b.company, amt, reason);\n        }\n    }\n\n    /// @notice Auto-refund if meeting passed + grace and still unsettled.\n    function refundIfExpired(uint256 bookingId) external nonReentrant {\n        Booking storage b = bookings[bookingId];\n        if (b.company == address(0)) revert InvalidBooking();\n        if (b.settled) revert AlreadySettled();\n        if (block.timestamp <= b.meetingEnd + REFUND_GRACE) revert TooEarlyForRefund();\n\n        b.settled = true;\n        uint256 amt = b.amount;\n        (bool ok, ) = payable(b.company).call{value: amt}(\"\");\n        require(ok, \"refund\");\n\n        emit RefundedExpired(bookingId, b.company, amt);\n    }\n\n    /// @notice Bump reputation (e.g. verified meeting success attestation).\n    function increaseReputation(address user) external onlyOracle {\n        unchecked {\n            reputation[user] += 10;\n        }\n        emit ReputationIncreased(user, reputation[user]);\n    }\n}\n"
+      }
+    }
+  }
+}

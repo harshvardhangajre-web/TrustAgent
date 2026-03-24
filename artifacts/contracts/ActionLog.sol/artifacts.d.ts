@@ -15,7 +15,7 @@ export interface ActionLog$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {};
   readonly inputSourceName: "project/contracts/ActionLog.sol";
-  readonly buildInfoId: "solc-0_8_20-768e81bfaccba59e19ca1c2368f316c816dbeb60";
+  readonly buildInfoId: "solc-0_8_20-9463b3c70aad76c52f04663dee93604c8ecc0562";
 };
 
 import "hardhat/types/artifacts";

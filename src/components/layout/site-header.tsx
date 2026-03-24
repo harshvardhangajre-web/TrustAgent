@@ -11,7 +11,7 @@ export function SiteHeader() {
         <Link href="/" className="flex items-center gap-2 group">
           {/* Animated shield icon */}
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"
-            className="text-cyan-DEFAULT transition-all group-hover:drop-shadow-[0_0_6px_rgba(6,182,212,0.9)]"
+            className="text-cyan transition-all group-hover:drop-shadow-[0_0_6px_rgba(6,182,212,0.9)]"
             style={{ filter: "drop-shadow(0 0 4px rgba(6,182,212,0.5))" }}>
             <path d="M9 1L2 4v5c0 4.418 3.134 7.843 7 8.5C12.866 16.843 16 13.418 16 9V4L9 1Z"
               stroke="currentColor" strokeWidth="1.4" fill="rgba(6,182,212,0.1)" />
@@ -19,14 +19,28 @@ export function SiteHeader() {
               strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <span className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
-            Trust<span className="text-cyan-DEFAULT" style={{ textShadow: "0 0 10px rgba(6,182,212,0.6)" }}>Agent</span>
+            Trust<span className="text-cyan" style={{ textShadow: "0 0 10px rgba(6,182,212,0.6)" }}>Agent</span>
           </span>
         </Link>
 
         {/* Nav + wallet */}
         <div className="flex items-center gap-4">
-          <Link href="/dashboard"
-            className="hidden font-mono text-[11px] uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground sm:inline">
+          <Link
+            href="/trust-agent-ai"
+            className="hidden font-mono text-[11px] uppercase tracking-widest text-cyan/90 transition-colors hover:text-cyan md:inline"
+          >
+            AI Demo
+          </Link>
+          <Link
+            href="/book"
+            className="hidden font-mono text-[11px] uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground sm:inline"
+          >
+            Book
+          </Link>
+          <Link
+            href="/dashboard"
+            className="hidden font-mono text-[11px] uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground sm:inline"
+          >
             Dashboard
           </Link>
           <ConnectWalletButton />

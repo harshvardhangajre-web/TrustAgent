@@ -1,12 +1,14 @@
 import { Activity, ExternalLink, Link2, Shield } from "lucide-react";
+import Link from "next/link";
 
-import { AgentsSection } from "@/components/agents-section";
-import { LiveShardeumFeed } from "@/components/live-shardeum-feed";
-import { TrustAgentDemo } from "@/components/trust-agent-demo";
+import { DashboardContent } from "@/components/dashboard-content";
 
-export const metadata = { title: "Startup Audit · Trust-Agent" };
+export const metadata = {
+  title: "Trust-Agent Command · Shardeum Mezame",
+};
 
-const CONTRACT_ADDR = process.env.NEXT_PUBLIC_ACTION_LOG_ADDRESS ?? "0x0000…0000";
+const TRUST = process.env.NEXT_PUBLIC_TRUST_AGENT_ADDRESS ?? "0x0000…0000";
+const ACTION = process.env.NEXT_PUBLIC_ACTION_LOG_ADDRESS ?? "—";
 const CHAIN_ID = process.env.NEXT_PUBLIC_CHAIN_ID ?? "8119";
 const EXPLORER_BASE = "https://explorer-mezame.shardeum.org";
 
@@ -49,10 +51,8 @@ function StatPill({
 }
 
 export default function DashboardPage() {
-  const shortAddr =
-    CONTRACT_ADDR.length > 12
-      ? `${CONTRACT_ADDR.slice(0, 6)}…${CONTRACT_ADDR.slice(-4)}`
-      : CONTRACT_ADDR;
+  const shortT =
+    TRUST.length > 12 ? `${TRUST.slice(0, 6)}…${TRUST.slice(-4)}` : TRUST;
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -62,23 +62,23 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2">
               <Shield
                 size={16}
-                className="text-cyan-DEFAULT"
+                className="text-cyan-400"
                 style={{ filter: "drop-shadow(0 0 6px rgba(6,182,212,0.7))" }}
               />
               <h1 className="font-mono text-lg font-bold uppercase tracking-widest text-foreground">
-                Startup Audit
+                Trust-Agent
               </h1>
               <span className="font-mono text-[10px] text-muted-foreground">
-                {"// Trust-Agent"}
+                {"// PS2 · Mezame"}
               </span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Connect a wallet, submit a pitch.{" "}
-              <code className="rounded bg-white/10 px-1 font-mono text-[11px]">/api/analyze</code>{" "}
-              scores it and returns a SHA-256 of the result; you log{" "}
-              <code className="rounded bg-white/10 px-1 font-mono text-[11px]">taskHash</code> +{" "}
-              <code className="rounded bg-white/10 px-1 font-mono text-[11px]">result</code> on
-              Shardeum Mezame.
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              Escrow bookings, AI auditor, on-chain Trust Score — plus startup audit logging.
+              Use{" "}
+              <Link href="/book" className="text-cyan-400 underline underline-offset-2">
+                /book
+              </Link>{" "}
+              for Calendly+ flow.
             </p>
           </div>
 
@@ -88,7 +88,7 @@ export default function DashboardPage() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
             </span>
             <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-green-400">
-              Live
+              Production build
             </span>
           </div>
         </div>
@@ -97,11 +97,11 @@ export default function DashboardPage() {
           <StatPill label="Network" value="Shardeum Mezame" dot="green" />
           <StatPill label="Chain ID" value={CHAIN_ID} dot="cyan" />
           <StatPill
-            label="Contract"
-            value={shortAddr}
-            href={`${EXPLORER_BASE}/address/${CONTRACT_ADDR}`}
+            label="TrustAgent"
+            value={shortT}
+            href={TRUST.startsWith("0x") ? `${EXPLORER_BASE}/address/${TRUST}` : undefined}
           />
-          <StatPill label="Analyze API" value="/api/analyze" dot="cyan" />
+          <StatPill label="ActionLog" value={ACTION.length > 14 ? `${ACTION.slice(0, 6)}…` : ACTION} />
           <a
             href={EXPLORER_BASE}
             target="_blank"
@@ -114,21 +114,13 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="h-px flex-1 bg-gradient-to-r from-cyan-DEFAULT/30 via-white/8 to-transparent" />
-          <Activity size={12} className="text-cyan-DEFAULT/60" />
-          <div className="h-px flex-1 bg-gradient-to-l from-cyan-DEFAULT/30 via-white/8 to-transparent" />
+          <div className="h-px flex-1 bg-gradient-to-r from-cyan-400/30 via-white/8 to-transparent" />
+          <Activity size={12} className="text-cyan-400/60" />
+          <div className="h-px flex-1 bg-gradient-to-l from-cyan-400/30 via-white/8 to-transparent" />
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="flex min-w-0 flex-col gap-8">
-          <TrustAgentDemo />
-          <AgentsSection />
-        </div>
-        <aside className="min-w-0 lg:sticky lg:top-20 lg:self-start">
-          <LiveShardeumFeed />
-        </aside>
-      </div>
+      <DashboardContent />
     </div>
   );
 }

@@ -1,7 +1,9 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Bot,
+  Calendar,
   FileSearch,
+  Gavel,
   Scale,
   ShieldCheck,
   Sparkles,
@@ -13,65 +15,73 @@ export interface TrustAgentDefinition {
   name: string;
   description: string;
   icon: LucideIcon;
-  /** How this agent is used in Trust-Agent / Shardeum flows */
   integration: string;
   status: "active" | "planned" | "beta";
 }
 
-/**
- * Registry of agents wired (or planned) in this project.
- * Dashboard renders this for the “Agents” section.
- */
 export const TRUST_AGENTS: TrustAgentDefinition[] = [
   {
-    id: "market-fit",
-    name: "Market Fit Analyst",
-    description:
-      "Scores startup pitches 1–100 with verdict, rationale, and recommendations via GPT-4o.",
-    icon: TrendingUp,
-    integration: "POST /api/analyze → ActionLog.logAction on Shardeum Mezame",
+    id: "escrow-book",
+    name: "Calendly+ Escrow",
+    description: "Company deposits SHM; TrustAgent.sol holds funds until AI oracle or timeout refund.",
+    icon: Calendar,
+    integration: "book() · Module A at /book",
     status: "active",
   },
   {
-    id: "integrity",
-    name: "Integrity Sentinel",
-    description:
-      "Re-computes SHA-256 of the logged result JSON and cross-checks on-chain taskHash + payload.",
+    id: "ai-judge",
+    name: "AI Auditor",
+    description: "LLM reads meeting notes; backend wallet calls executeOutcome → payout or refund.",
+    icon: Gavel,
+    integration: "POST /api/judge · Ethers v6 + retry",
+    status: "active",
+  },
+  {
+    id: "reputation",
+    name: "Trust Score Registry",
+    description: "Successful outcomes increase reputation[user] — verifiable resume on Shardeum.",
     icon: ShieldCheck,
-    integration: "Client verify + readContract(actions[id])",
+    integration: "TrustAgent.reputation(address) · increaseReputation on success path",
+    status: "active",
+  },
+  {
+    id: "market-fit",
+    name: "Startup Analyst",
+    description: "GPT-4o scores pitches; hashes logged via legacy ActionLog for audit trail.",
+    icon: TrendingUp,
+    integration: "POST /api/analyze",
     status: "active",
   },
   {
     id: "feed-indexer",
-    name: "Mezame Feed Indexer",
-    description:
-      "Surfaces recent ActionLogged events for a live audit trail in the dashboard.",
+    name: "Live Feeds",
+    description: "ActionLog + TrustAgent events surfaced for judges and demos.",
     icon: Sparkles,
-    integration: "GET /api/feed (Ethers.js v6 JsonRpcProvider)",
+    integration: "GET /api/feed · /api/feed-meeting",
     status: "active",
   },
   {
     id: "compliance",
-    name: "Compliance Draft (planned)",
-    description: "Policy-aware red-flag detection for regulated verticals.",
+    name: "Compliance Draft",
+    description: "Policy-aware review for regulated industries.",
     icon: Scale,
-    integration: "Future: dedicated route + separate taskType",
+    integration: "Planned",
     status: "planned",
   },
   {
     id: "document",
-    name: "Document Extractor (planned)",
-    description: "Pitch decks → structured fields before scoring.",
+    name: "Document Extractor",
+    description: "Decks → structured fields before scoring.",
     icon: FileSearch,
-    integration: "Future: upload pipeline + IPFS hash as taskHash variant",
+    integration: "Planned",
     status: "planned",
   },
   {
     id: "orchestrator",
-    name: "Agent Orchestrator (beta)",
-    description: "Coordinates multi-step workflows across agents with shared evidence hashes.",
+    name: "Orchestrator",
+    description: "Multi-step flows across agents with shared evidence.",
     icon: Bot,
-    integration: "hooks/use-execute-trust-agent + extensible taskType",
+    integration: "hooks + task types",
     status: "beta",
   },
 ];
